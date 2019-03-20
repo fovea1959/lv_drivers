@@ -41,6 +41,7 @@ extern "C" {
 /**********************
  * GLOBAL PROTOTYPES
  **********************/
+
 /**
  * Initialize the keyboard
  */

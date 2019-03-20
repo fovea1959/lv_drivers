@@ -7,6 +7,7 @@
  *      INCLUDES
  *********************/
 #include "keyboard.h"
+#include "keyboard_sti_indev.h"
 #if USE_KEYBOARD
 
 #include "lvgl/lv_core/lv_group.h"
@@ -45,6 +46,11 @@ void keyboard_init(void)
     /*Nothing to init*/
 }
 
+static IndevMode currentMode;
+void set_indev_mode (IndevMode newMode) {
+	currentMode = newMode;
+}
+
 /**
  * Get the last pressed or released character from the PC's keyboard
  * @param data store the read data here
@@ -54,6 +60,10 @@ bool keyboard_read(lv_indev_data_t * data)
 {
     data->state = state;
     data->key = keycode_to_ascii(last_key);
+
+    if (state) {
+    	printf("key pressed: %d\n", data->key);
+    }
 
     return false;       /*No more data to read so return false*/
 }
@@ -93,10 +103,22 @@ static uint32_t keycode_to_ascii(uint32_t sdl_key)
     /*Remap some key to LV_GROUP_KEY_... to manage groups*/
     switch(sdl_key) {
         case SDLK_RIGHT:
+        	if (currentMode == INDEV_MODE_NORMAL) {
+        		return LV_GROUP_KEY_NEXT;
+        	} else {
+            	return LV_GROUP_KEY_RIGHT;
+        	}
+
         case SDLK_KP_PLUS:
             return LV_GROUP_KEY_RIGHT;
 
         case SDLK_LEFT:
+        	if (currentMode == INDEV_MODE_NORMAL) {
+        		return LV_GROUP_KEY_PREV;
+        	} else {
+            	return LV_GROUP_KEY_LEFT;
+        	}
+
         case SDLK_KP_MINUS:
             return LV_GROUP_KEY_LEFT;
 
