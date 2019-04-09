@@ -47,12 +47,11 @@ void keyboard_init(void)
 }
 
 static IndevMode currentMode;
-static sti_keypress_cb sti_keypress_f;
-
 void set_indev_mode (IndevMode newMode) {
 	currentMode = newMode;
 }
 
+static sti_keypress_cb sti_keypress_f;
 void set_indev_kp_function (sti_keypress_cb f) {
   sti_keypress_f = f;
 }
