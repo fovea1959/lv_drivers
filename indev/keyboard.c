@@ -47,8 +47,14 @@ void keyboard_init(void)
 }
 
 static IndevMode currentMode;
+static sti_keypress_cb sti_keypress_f;
+
 void set_indev_mode (IndevMode newMode) {
 	currentMode = newMode;
+}
+
+void set_indev_kp_function (sti_keypress_cb f) {
+  sti_keypress_f = f;
 }
 
 /**
@@ -62,7 +68,12 @@ bool keyboard_read(lv_indev_data_t * data)
     data->key = keycode_to_ascii(last_key);
 
     if (state) {
-    	printf("key pressed: %d\n", data->key);
+      #if 1
+      printf("keyboard.c state: %d, key: %d\n", data->state, data->key);
+      #endif
+      if (sti_keypress_f) {
+        (*sti_keypress_f) (data->key);
+      }
     }
 
     return false;       /*No more data to read so return false*/
@@ -103,7 +114,7 @@ static uint32_t keycode_to_ascii(uint32_t sdl_key)
     /*Remap some key to LV_GROUP_KEY_... to manage groups*/
     switch(sdl_key) {
         case SDLK_RIGHT:
-        	if (currentMode == INDEV_MODE_NORMAL) {
+        	if (currentMode == INDEV_MODE_NORMAL || currentMode == INDEV_MODE_BUTTON_LIST) {
         		return LV_GROUP_KEY_NEXT;
         	} else {
             	return LV_GROUP_KEY_RIGHT;
@@ -113,7 +124,7 @@ static uint32_t keycode_to_ascii(uint32_t sdl_key)
             return LV_GROUP_KEY_RIGHT;
 
         case SDLK_LEFT:
-        	if (currentMode == INDEV_MODE_NORMAL) {
+          if (currentMode == INDEV_MODE_NORMAL || currentMode == INDEV_MODE_BUTTON_LIST) {
         		return LV_GROUP_KEY_PREV;
         	} else {
             	return LV_GROUP_KEY_LEFT;
@@ -122,11 +133,19 @@ static uint32_t keycode_to_ascii(uint32_t sdl_key)
         case SDLK_KP_MINUS:
             return LV_GROUP_KEY_LEFT;
 
-        case SDLK_UP:
-            return LV_GROUP_KEY_UP;
-
         case SDLK_DOWN:
+          if (currentMode == INDEV_MODE_BUTTON_LIST) {
+            return LV_GROUP_KEY_NEXT;
+          } else {
             return LV_GROUP_KEY_DOWN;
+          }
+
+        case SDLK_UP:
+          if (currentMode == INDEV_MODE_BUTTON_LIST) {
+            return LV_GROUP_KEY_PREV;
+          } else {
+            return LV_GROUP_KEY_UP;
+          }
 
         case SDLK_ESCAPE:
             return LV_GROUP_KEY_ESC;
