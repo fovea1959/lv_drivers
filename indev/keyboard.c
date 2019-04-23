@@ -30,6 +30,8 @@ static uint32_t keycode_to_ascii(uint32_t sdl_key);
 static uint32_t last_key;
 static lv_indev_state_t state;
 
+static int gotta_key;
+
 /**********************
  *      MACROS
  **********************/
@@ -63,17 +65,21 @@ void set_indev_kp_function (sti_keypress_cb f) {
  */
 bool keyboard_read(lv_indev_data_t * data)
 {
+  if (gotta_key) {
     data->state = state;
     data->key = keycode_to_ascii(last_key);
+    gotta_key = false;
 
-    if (state) {
-      #if 1
-      printf("keyboard.c state: %d, key: %d\n", data->state, data->key);
-      #endif
-      if (sti_keypress_f) {
-        (*sti_keypress_f) (data->key);
-      }
+    #if 1
+    printf("keyboard.c state: %d, key: %d\n", data->state, data->key);
+    #endif
+    if (sti_keypress_f) {
+      (*sti_keypress_f) (data);
     }
+  } else {
+    data->state = LV_INDEV_STATE_REL;
+    data->key = 0;
+  }
 
     return false;       /*No more data to read so return false*/
 }
@@ -89,9 +95,11 @@ void keyboard_handler(SDL_Event * event)
         case SDL_KEYDOWN:                       /*Button press*/
             last_key = event->key.keysym.sym;   /*Save the pressed key*/
             state = LV_INDEV_STATE_PR;          /*Save the key is pressed now*/
+            gotta_key = true;
             break;
         case SDL_KEYUP:                         /*Button release*/
             state = LV_INDEV_STATE_REL;         /*Save the key is released but keep the last key*/
+            gotta_key = true;
             break;
         default:
             break;

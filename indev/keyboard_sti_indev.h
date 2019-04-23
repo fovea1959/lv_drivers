@@ -4,7 +4,7 @@
  *      TYPEDEFS
  **********************/
 typedef enum indevMode { INDEV_MODE_NORMAL, INDEV_MODE_KB, INDEV_MODE_BUTTON_LIST } IndevMode;
-typedef void (*sti_keypress_cb)(uint32_t k);
+typedef void (*sti_keypress_cb)(lv_indev_data_t * k);
 
 /**********************
  * GLOBAL PROTOTYPES
