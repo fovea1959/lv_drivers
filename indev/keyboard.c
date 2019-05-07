@@ -58,6 +58,49 @@ void set_indev_kp_function (sti_keypress_cb f) {
   sti_keypress_f = f;
 }
 
+#define LV_GROUP_KEY_UP             17      /*0x11*/
+#define LV_GROUP_KEY_DOWN           18      /*0x12*/
+#define LV_GROUP_KEY_RIGHT          19      /*0x13*/
+#define LV_GROUP_KEY_LEFT           20      /*0x14*/
+#define LV_GROUP_KEY_ESC            27      /*0x1B*/
+#define LV_GROUP_KEY_DEL            127     /*0x7F*/
+#define LV_GROUP_KEY_BACKSPACE      8       /*0x08*/
+#define LV_GROUP_KEY_ENTER          10      /*0x0A, '\n'*/
+#define LV_GROUP_KEY_NEXT           9       /*0x09, '\t'*/
+#define LV_GROUP_KEY_PREV           11      /*0x0B, '*/
+
+
+static void * keyname (uint32_t k) {
+  switch (k) {
+    case LV_GROUP_KEY_UP:
+      return strdup("up");
+    case LV_GROUP_KEY_DOWN:
+      return strdup("down");
+    case LV_GROUP_KEY_RIGHT:
+      return strdup("right");
+    case LV_GROUP_KEY_LEFT:
+      return strdup("left");
+    case LV_GROUP_KEY_ESC:
+      return strdup("esc");
+    case LV_GROUP_KEY_DEL:
+      return strdup("del");
+    case LV_GROUP_KEY_BACKSPACE:
+      return strdup("backspace");
+    case LV_GROUP_KEY_ENTER:
+      return strdup("enter");
+    case LV_GROUP_KEY_NEXT:
+      return strdup("next");
+    case LV_GROUP_KEY_PREV:
+      return strdup("prev");
+
+    default: {
+      char buf[40];
+      sprintf (buf, "0x%x", k);
+      return strdup(buf);
+    }
+  }
+}
+
 /**
  * Get the last pressed or released character from the PC's keyboard
  * @param data store the read data here
@@ -71,7 +114,13 @@ bool keyboard_read(lv_indev_data_t * data)
     gotta_key = false;
 
     #if 1
-    printf("keyboard.c state: %d, key: %d\n", data->state, data->key);
+    if (state) {
+      char * k1 = keyname(last_key);
+      char * k2 = keyname(data->key);
+      printf("keyboard.c state: %d, key: %s -> %s\n", data->state, k1, k2);
+      free (k1);
+      free (k2);
+    }
     #endif
     if (sti_keypress_f) {
       (*sti_keypress_f) (data);
